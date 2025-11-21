@@ -1,8 +1,8 @@
-using Apps.Appname.Connections;
+using Apps.PropioOne.Connections;
 using Blackbird.Applications.Sdk.Common.Authentication;
-using Tests.Appname.Base;
+using Tests.PropioOne.Base;
 
-namespace Tests.Appname;
+namespace Tests.PropioOne;
 
 [TestClass]
 public class ConnectionValidatorTests : TestBase

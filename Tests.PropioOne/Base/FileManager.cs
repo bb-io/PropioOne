@@ -1,7 +1,7 @@
 ﻿using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 
-namespace Tests.Appname.Base;
+namespace Tests.PropioOne.Base;
 
 public class FileManager : IFileManagementClient
 {

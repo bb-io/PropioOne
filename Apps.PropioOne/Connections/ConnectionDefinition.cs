@@ -1,8 +1,8 @@
-﻿using Apps.Appname.Constants;
+﻿using Apps.PropioOne.Constants;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
 
-namespace Apps.Appname.Connections;
+namespace Apps.PropioOne.Connections;
 
 public class ConnectionDefinition : IConnectionDefinition
 {
@@ -14,7 +14,15 @@ public class ConnectionDefinition : IConnectionDefinition
             AuthenticationType = ConnectionAuthenticationType.Undefined,
             ConnectionProperties = new List<ConnectionProperty>
             {
-                new(CredsNames.Token) { DisplayName = "API Token", Sensitive = true}
+                new(CredsNames.ClientId) { DisplayName = "Client ID"},
+                new(CredsNames.ClientSecret) { DisplayName = "Client secret"},
+                new(CredsNames.Url) { DisplayName = "Base URL",
+                Description="Select the base URL",
+                DataItems=
+                [
+                    new ("https://tgw-dev.propio-ls.com","Develop enviroment"),
+                    new ("https://tgw.propio-ls.com","Production enviroment")
+                 ]}
             }
         }
     };

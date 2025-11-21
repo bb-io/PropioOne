@@ -1,17 +1,17 @@
-using Apps.Appname.Api;
+using Apps.PropioOne.Api;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Invocation;
 
-namespace Apps.Appname;
+namespace Apps.PropioOne;
 
-public class Invocable : BaseInvocable
+public class PropioOneInvocable : BaseInvocable
 {
     protected AuthenticationCredentialsProvider[] Creds =>
         InvocationContext.AuthenticationCredentialsProviders.ToArray();
 
-    protected Client Client { get; }
-    public Invocable(InvocationContext invocationContext) : base(invocationContext)
+    protected PropioOneClient Client { get; }
+    public PropioOneInvocable(InvocationContext invocationContext) : base(invocationContext)
     {
         Client = new(Creds);
     }
