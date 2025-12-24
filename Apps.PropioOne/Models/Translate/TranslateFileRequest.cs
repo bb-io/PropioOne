@@ -40,7 +40,7 @@ namespace Apps.PropioOne.Models.Translate
         //public string? FileTranslationStrategy { get; set; }
 
         [Display("Output file handling", Description = "original = return original format; otherwise returns XLIFF")]
-        [StaticDataSource(typeof(ProcessFileFormatHandler)]
+        [StaticDataSource(typeof(ProcessFileFormatHandler))]
         public string? OutputFileHandling { get; set; }
     }
 }
