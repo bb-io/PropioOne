@@ -13,10 +13,12 @@ namespace Tests.PropioOne
             var action = new TranslationActions(InvocationContext, FileManager);
             var response = await action.TranslateText(new()
             {
-                SourceLanguage = "en",
-                TargetLanguage = "es",
-                Text = "Hello, world!",
-                IsHtml = false
+                ProjectId = "1849777",
+                SourceLanguage = "es-ES",
+                TargetLanguage = "en-US",
+                Text = "Hola mundo",
+                Domain= "General Vocabulary",
+                Provider= "Microsoft"
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);

@@ -1,6 +1,8 @@
 ﻿using Apps.PropioOne.Api;
+using Apps.PropioOne.Constants;
 using Apps.PropioOne.Webhook.Model;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
@@ -17,22 +19,19 @@ namespace Apps.PropioOne.Webhook
             if (!values.TryGetValue(PayloadUrlKey, out var payloadUrl) ||
                 string.IsNullOrWhiteSpace(payloadUrl))
             {
-                throw new ArgumentException(
-                    $"Missing '{PayloadUrlKey}' in webhook values.", nameof(values));
+                throw new PluginMisconfigurationException(
+                    $"Missing '{PayloadUrlKey}' in webhook values.");
             }
 
-            if (string.IsNullOrWhiteSpace(setting.CustomerNumber))
-            {
-                throw new ArgumentException(
-                    "Customer number is required.",
-                    nameof(setting.CustomerNumber));
-            }
+            var clientId = invocationContext.AuthenticationCredentialsProviders.FirstOrDefault(x => x.KeyName == CredsNames.ClientId)?.Value;
 
-            if (!int.TryParse(setting.CustomerNumber, out var customerNumber))
+            if (string.IsNullOrWhiteSpace(clientId))
+                throw new PluginMisconfigurationException("Client ID is missing in credentials.");
+
+            if (!int.TryParse(clientId, out var customerNumber))
             {
-                throw new ArgumentException(
-                    $"Customer number must be an integer, got '{setting.CustomerNumber}'.",
-                    nameof(setting.CustomerNumber));
+                throw new PluginMisconfigurationException(
+                    $"Customer number must be an integer, got '{clientId}'.");
             }
 
             var request = new RestRequest("/api/v1/project/webhook/register", Method.Post);
@@ -82,22 +81,25 @@ namespace Apps.PropioOne.Webhook
 
             string? customerSegment = null;
 
-            if (!string.IsNullOrWhiteSpace(setting.CustomerNumber))
+            var clientId = invocationContext.AuthenticationCredentialsProviders.FirstOrDefault(x => x.KeyName == CredsNames.ClientId)?.Value;
+
+            if (string.IsNullOrWhiteSpace(clientId))
+                throw new PluginMisconfigurationException("Client ID is missing in credentials.");
+
+            if (!string.IsNullOrWhiteSpace(clientId))
             {
-                if (!int.TryParse(setting.CustomerNumber, out _))
+                if (!int.TryParse(clientId, out _))
                 {
-                    throw new ArgumentException(
-                        $"Customer number must be an integer, got '{setting.CustomerNumber}'.",
-                        nameof(setting.CustomerNumber));
+                    throw new Exception(
+                        $"Customer number must be an integer, got '{clientId}'.");
                 }
 
-                customerSegment = $"/{setting.CustomerNumber}";
+                customerSegment = $"/{clientId}";
             }
             else
             {
-                throw new ArgumentException(
-                    "Customer number is required for webhook unsubscribe.",
-                    nameof(setting.CustomerNumber));
+                throw new Exception(
+                    "Customer number is required for webhook unsubscribe.");
             }
 
             var getRequest =

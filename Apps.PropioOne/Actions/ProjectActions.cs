@@ -36,9 +36,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         var uploadResponse =
             await Client.ExecuteWithErrorHandling<UploadSourceFileResponse>(uploadRequest);
 
-        var sourceFileNumber = uploadResponse.SourceFileNumber;
-        if (sourceFileNumber <= 0)
-            throw new PluginApplicationException("Propio did not return a valid sourceFileNumber for uploaded source file.");
+        var sourceFileNumber = uploadResponse.SourceFileNumber;     
 
         DateTime? requestedDueDate = null;
         if (input.DueDate.HasValue)
@@ -76,7 +74,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             {
             new SourceFileRequestModel
             {
-                SourceFileNumber = sourceFileNumber,
+                SourceFileNumber = int.Parse(sourceFileNumber),
                 TargetLanguages = input.TargetLanguageCodes,
                 PageCount = null
             }

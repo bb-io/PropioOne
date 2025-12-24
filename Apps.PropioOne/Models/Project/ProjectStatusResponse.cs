@@ -6,7 +6,7 @@ namespace Apps.PropioOne.Models.Project
     public class ProjectStatusResponse
     {
         [JsonProperty("projectNumber")]
-        [Display("Project number")]
+        [Display("Project Id")]
         public int ProjectNumber { get; set; }
 
         [JsonProperty("tmsReferenceNumber")]

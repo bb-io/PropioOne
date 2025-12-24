@@ -14,7 +14,7 @@ public class ConnectionDefinition : IConnectionDefinition
             AuthenticationType = ConnectionAuthenticationType.Undefined,
             ConnectionProperties = new List<ConnectionProperty>
             {
-                new(CredsNames.ClientId) { DisplayName = "Client ID"},
+                new(CredsNames.ClientAppId) { DisplayName = "Client app ID"},
                 new(CredsNames.ClientSecret) { DisplayName = "Client secret"},
                 new(CredsNames.Url) { DisplayName = "Base URL",
                 Description="Select the base URL",
@@ -22,7 +22,8 @@ public class ConnectionDefinition : IConnectionDefinition
                 [
                     new ("https://tgw-dev.propio-ls.com","Develop enviroment"),
                     new ("https://tgw.propio-ls.com","Production enviroment")
-                 ]}
+                 ]},
+                new(CredsNames.ClientId) { DisplayName = "Client number"},
             }
         }
     };

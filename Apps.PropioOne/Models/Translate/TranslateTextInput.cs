@@ -21,11 +21,8 @@ namespace Apps.PropioOne.Models.Translate
         [Display("Text is HTML")]
         public bool? IsHtml { get; set; }
 
-        [Display("Client ID")]
-        public int? ClientId { get; set; }
-
         [Display("Project ID")]
-        public int? ProjectId { get; set; }
+        public string ProjectId { get; set; }
 
         [Display("Client application")]
         public string? ClientApplication { get; set; }

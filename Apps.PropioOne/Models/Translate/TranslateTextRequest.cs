@@ -22,4 +22,15 @@
         public List<string>? OriginalText { get; set; }
         public List<string>? TranslatedText { get; set; }
     }
+
+    public class TranslateTextResponseModel
+    {
+        public int JobId { get; set; }
+        public List<TranslatedSegment> TranslatedSegments { get; set; } = new();
+    }
+
+    public class TranslatedSegment
+    {
+        public string? Text { get; set; }
+    }
 }

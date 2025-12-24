@@ -29,7 +29,9 @@ public class PropioOneClient : BlackBirdRestClient
     public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
     {
         string content = (await ExecuteWithErrorHandling(request)).Content;
-        T val = JsonConvert.DeserializeObject<T>(content, JsonSettings);
+        T val = JsonConvert.DeserializeObject<T>(
+            
+            content, JsonSettings);
         if (val == null)
         {
             throw new Exception($"Could not parse {content} to {typeof(T)}");
@@ -51,7 +53,7 @@ public class PropioOneClient : BlackBirdRestClient
 
     private async Task<string> GetToken(IEnumerable<AuthenticationCredentialsProvider> creds)
     {
-        var clientId = creds.Get(CredsNames.ClientId).Value;
+        var clientId = creds.Get(CredsNames.ClientAppId).Value;
         var clientSecret = creds.Get(CredsNames.ClientSecret).Value;
         var apiUrl = creds.Get(CredsNames.Url).Value;
 
@@ -74,7 +76,6 @@ public class PropioOneClient : BlackBirdRestClient
         request.AddParameter("client_id", clientId);
         request.AddParameter("client_secret", clientSecret);
 
-        var tokenClient = new RestClient();
         var response = await ExecuteWithErrorHandling<AccessTokenResponse>(request);
 
         if (string.IsNullOrEmpty(response.AccessToken))

@@ -13,7 +13,7 @@ public class ProjectActionTests : TestBase
 
         var response = await action.CreateProject(new()
         {
-            ProjectName = "Test Project 5",
+            ProjectName = "Test Project 1",
             SourceLanguageCode = "en",
             TargetLanguageCodes = new[] { "es" },
             SourceFile = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name= "taus.xliff" },
@@ -34,7 +34,7 @@ public class ProjectActionTests : TestBase
     {
         var action = new ProjectActions(InvocationContext, FileManager);
 
-        var response = await action.GetProject(new() { ProjectId = "650335"});
+        var response = await action.GetProject(new() { ProjectId = "1849777" });
 
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);
         Console.WriteLine(json);
