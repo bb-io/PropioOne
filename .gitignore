@@ -367,3 +367,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 */appsettings.json
+/Tests.PropioOne/appsettings.json
+/Tests.PropioOne/appsettings.json
