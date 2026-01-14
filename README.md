@@ -19,6 +19,7 @@ Documentation coming soon.
 ### Translation
 
 - **Translate text**: Translates the provided text from the source language to the target language.
+- **Translate** Translates files from a source language to a target language using
 
 ## Feedback
 
