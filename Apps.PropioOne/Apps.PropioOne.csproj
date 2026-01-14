@@ -6,15 +6,9 @@
         <Nullable>enable</Nullable>
         <Product>Propio ONE [Beta]</Product>
         <Description>Platform for accessing language services, letting organizations quickly connect to professional interpreters</Description>
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <AssemblyName>Apps.PropioOne</AssemblyName>
     </PropertyGroup>
-
-    <ItemGroup>
-      <Compile Remove="image\**" />
-      <EmbeddedResource Remove="image\**" />
-      <None Remove="image\**" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Blackbird.Applications.SDK.Blueprints" Version="1.0.1" />
@@ -24,4 +18,7 @@
         <PackageReference Include="Blackbird.Filters" Version="1.1.44" />
     </ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png" />
+	</ItemGroup>
 </Project>
