@@ -11,6 +11,7 @@ using Blackbird.Filters.Content;
 using Blackbird.Filters.Enums;
 using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
+using Blackbird.Filters.Xliff.Xliff1;
 using RestSharp;
 using System.Globalization;
 using System.Text.Json;
@@ -55,7 +56,7 @@ namespace Apps.PropioOne.Actions
                 OriginalText = new List<string> { input.Text }
             };
 
-            var request = new RestRequest("/api/v1/Translation/TextTranslation", Method.Post);
+            var request = new RestRequest("/api/v1/Translation/Text", Method.Post);
 
             var jsonOptions = new JsonSerializerOptions
             {
@@ -68,12 +69,14 @@ namespace Apps.PropioOne.Actions
 
             var apiResponse = await Client.ExecuteWithErrorHandling<TextTranslationApiResponse>(request);
 
+            var first = apiResponse.TranslatedTexts?.FirstOrDefault();
+
             return new TranslateTextResponse
             {
-                SourceLanguageCode = apiResponse.TranslationDirection?.SourceLanguage ?? input.SourceLanguage,
-                TargetLanguageCode = apiResponse.TranslationDirection?.TargetLanguage ?? input.TargetLanguage,
-                SourceText = apiResponse.OriginalText?.FirstOrDefault() ?? input.Text,
-                TranslatedText = apiResponse.TranslatedText?.FirstOrDefault() ?? string.Empty
+                SourceLanguageCode = input.SourceLanguage,
+                TargetLanguageCode = input.TargetLanguage,
+                SourceText = first?.OriginalText ?? input.Text,
+                TranslatedText = first?.TranslatedText ?? string.Empty
             };
         }
 
@@ -104,8 +107,11 @@ namespace Apps.PropioOne.Actions
 
         private async Task<FileTranslationResponse> HandleInteroperableTransformation(Transformation content, TranslateFileRequest input)
         {
-            content.SourceLanguage ??= input.SourceLanguage;
-            content.TargetLanguage ??= input.TargetLanguage;
+            if (!string.IsNullOrWhiteSpace(input.SourceLanguage))
+                content.SourceLanguage = input.SourceLanguage;
+
+            if (!string.IsNullOrWhiteSpace(input.TargetLanguage))
+                content.TargetLanguage = input.TargetLanguage;
 
             if (string.IsNullOrWhiteSpace(content.SourceLanguage) || string.IsNullOrWhiteSpace(content.TargetLanguage))
                 throw new PluginMisconfigurationException("Source or target language not defined.");
@@ -116,65 +122,110 @@ namespace Apps.PropioOne.Actions
             var clientId = GetClientIdFromCreds(invocationContext);
             var projectId = ParseProjectId(input.ProjectId);
 
-            var units = content.GetUnits()
-                .Where(u => u.Name != null)
-                .ToList();
+            static string RenderLine(List<LineElement>? line) =>
+                line == null || line.Count == 0 ? string.Empty : string.Concat(line.Select(e => e.Render()));
 
-            units = units
-                .Where(u => !string.IsNullOrWhiteSpace(ExtractSourceText(u)))
-                .ToList();
+            static List<LineElement> MakeLine(string text) =>
+                new() { new LineElement { Value = text } };
 
-            if (units.Count == 0)
+            var overwriteExistingTargets = true;
+
+            bool SegmentFilter(Segment s)
             {
-                if (input.OutputFileHandling?.Equals("original", StringComparison.OrdinalIgnoreCase) == true)
+                if (string.IsNullOrWhiteSpace(RenderLine(s.Source)))
+                    return false;
+
+                var isInitial = s.State == null || s.State == SegmentState.Initial;
+                if (!isInitial)
+                    return false;
+
+                if (!overwriteExistingTargets)
                 {
-                    using var originalStream = await fileManagement.DownloadAsync(input.File);
+                    var target = RenderLine(s.Target);
+                    if (!string.IsNullOrWhiteSpace(target))
+                        return false;
+                }
+
+                return true;
+            }
+
+            var units = content.GetUnits()
+                .Where(u => u?.Name != null)
+                .ToList();
+
+            if (!units.SelectMany(u => u.Segments).Any(SegmentFilter))
+                return await BuildFileResponseByFormat(content, input);
+
+            var processed = await units
+                .Batch(batchSize: 50, segmentFilter: SegmentFilter)
+                .Process<string>(async batch =>
+                {
+                    var sourceTexts = batch.Select(x => RenderLine(x.Segment.Source)).ToList();
+
+                    var translatedTexts = await TranslateBatchViaTextEndpoint(
+                        clientId, projectId, input,
+                        content.SourceLanguage!, content.TargetLanguage!,
+                        sourceTexts);
+
+                    if (translatedTexts.Count != sourceTexts.Count)
+                    {
+                        translatedTexts = translatedTexts
+                            .Take(sourceTexts.Count)
+                            .Concat(Enumerable.Repeat(string.Empty, Math.Max(0, sourceTexts.Count - translatedTexts.Count)))
+                            .ToList();
+                    }
+
+                    return translatedTexts;
+                });
+
+            foreach ((Unit Unit, IEnumerable<(Segment Segment, string Result)> Results) item in processed)
+            {
+                foreach ((Segment Segment, string Result) r in item.Results)
+                {
+                    if (string.IsNullOrWhiteSpace(r.Result))
+                        continue;
+
+                    r.Segment.Target = MakeLine(r.Result);
+                }
+            }
+
+            return await BuildFileResponseByFormat(content, input);
+        }
+
+        private async Task<FileTranslationResponse> BuildFileResponseByFormat(Transformation content, TranslateFileRequest input)
+        {
+            if (input.OutputFileHandling?.Equals("original", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                try
+                {
+                    var targetContent = content.Target();
                     var outFile = await fileManagement.UploadAsync(
-                        originalStream,
-                        input.File.ContentType ?? "application/octet-stream",
-                        input.File.Name);
+                        targetContent.Serialize().ToStream(),
+                        targetContent.OriginalMediaType ?? "application/octet-stream",
+                        targetContent.OriginalName ?? input.File.Name);
 
                     return new FileTranslationResponse { File = outFile };
                 }
-
-                var xliffFile = await fileManagement.UploadAsync(
-                    content.Serialize().ToStream(),
-                    MediaTypes.Xliff,
-                    content.XliffFileName);
-
-                return new FileTranslationResponse { File = xliffFile };
-            }
-
-            foreach (var batch in units.Chunk(50))
-            {
-                var sourceTexts = batch.Select(u => ExtractSourceText(u)).ToList();
-
-                var translatedTexts = await TranslateBatchViaTextEndpoint(
-                    clientId, projectId, input,
-                    content.SourceLanguage!, content.TargetLanguage!,
-                    sourceTexts);
-
-                var count = Math.Min(batch.Length, translatedTexts.Count);
-
-                for (int i = 0; i < count; i++)
+                catch
                 {
-                    var translated = translatedTexts[i];
-                    if (string.IsNullOrWhiteSpace(translated))
-                        continue;
+                    var xliffFallback = await fileManagement.UploadAsync(
+                        content.Serialize().ToStream(),
+                        MediaTypes.Xliff,
+                        content.XliffFileName);
 
-                    ApplyTargetText(batch[i], translated);
+                    return new FileTranslationResponse { File = xliffFallback };
                 }
             }
 
-            if (input.OutputFileHandling?.Equals("original", StringComparison.OrdinalIgnoreCase) == true)
+            if (input.OutputFileHandling?.Equals("xliff1", StringComparison.OrdinalIgnoreCase) == true)
             {
-                var targetContent = content.Target();
-                var outFile = await fileManagement.UploadAsync(
-                    targetContent.Serialize().ToStream(),
-                    targetContent.OriginalMediaType ?? "application/octet-stream",
-                    targetContent.OriginalName ?? input.File.Name);
+                var xliff1String = Xliff1Serializer.Serialize(content);
+                var file = await fileManagement.UploadAsync(
+                    xliff1String.ToStream(),
+                    MediaTypes.Xliff,
+                    content.XliffFileName);
 
-                return new FileTranslationResponse { File = outFile };
+                return new FileTranslationResponse { File = file };
             }
 
             var resultXliff = await fileManagement.UploadAsync(
@@ -212,12 +263,14 @@ namespace Apps.PropioOne.Actions
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
-            var json = JsonSerializer.Serialize(body, jsonOptions);
-            request.AddStringBody(json, DataFormat.Json);
+            request.AddStringBody(JsonSerializer.Serialize(body, jsonOptions), DataFormat.Json);
 
             var apiResponse = await Client.ExecuteWithErrorHandling<TextTranslationApiResponse>(request);
 
-            return apiResponse.TranslatedText ?? new List<string>();
+            return apiResponse.TranslatedTexts?
+                       .Select(x => x.TranslatedText ?? string.Empty)
+                       .ToList()
+                   ?? new List<string>();
         }
 
 
@@ -245,18 +298,6 @@ namespace Apps.PropioOne.Actions
                 throw new PluginApplicationException($"ProjectId must be an integer. Got: '{projectIdRaw}'.");
 
             return projectId;
-        }
-
-        private static string ExtractSourceText(Unit unit)
-        {
-            TextUnit source = unit.GetSource();
-            return source.GetNormalizedText();
-        }
-
-        private static void ApplyTargetText(Unit unit, string translated)
-        {
-            TextUnit target = unit.GetTarget();
-            target.SetCodedText(translated);
         }
     }
 }

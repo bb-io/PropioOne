@@ -1,4 +1,6 @@
-﻿namespace Apps.PropioOne.Models.Translate
+﻿using Newtonsoft.Json;
+
+namespace Apps.PropioOne.Models.Translate
 {
     public class TranslateTextRequest
     {
@@ -16,11 +18,19 @@
         public string SourceLanguage { get; set; } = default!;
         public string TargetLanguage { get; set; } = default!;
     }
-    internal class TextTranslationApiResponse
+    public class TextTranslationApiResponse
     {
-        public TranslationDirection? TranslationDirection { get; set; }
-        public List<string>? OriginalText { get; set; }
-        public List<string>? TranslatedText { get; set; }
+        [JsonProperty("translatedTexts")]
+        public List<TranslatedTextItem>? TranslatedTexts { get; set; }
+    }
+
+    public class TranslatedTextItem
+    {
+        [JsonProperty("originalText")]
+        public string? OriginalText { get; set; }
+
+        [JsonProperty("translatedText")]
+        public string? TranslatedText { get; set; }
     }
 
     public class TranslateTextResponseModel

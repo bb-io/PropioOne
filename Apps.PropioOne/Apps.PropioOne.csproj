@@ -5,8 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Product>Propio ONE [Beta]</Product>
-        <Description>Description</Description>
-        <Version>1.0.1</Version>
+        <Description>Platform for accessing language services, letting organizations quickly connect to professional interpreters</Description>
+        <Version>1.0.2</Version>
         <AssemblyName>Apps.PropioOne</AssemblyName>
     </PropertyGroup>
 
