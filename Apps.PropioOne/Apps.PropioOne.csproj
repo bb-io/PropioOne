@@ -4,9 +4,9 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Product>Propio ONE [Beta]</Product>
-        <Description>Platform for accessing language services, letting organizations quickly connect to professional interpreters</Description>
-        <Version>1.0.3</Version>
+        <Product>Propio [Beta]</Product>
+        <Description>Propio is your all-in-one translation and localization solutions app, supporting 200+ languages. Submit translation projects, use AI-powered language services, track project status, and access complete, translated files in one seamless experience.</Description>
+        <Version>1.0.4</Version>
         <AssemblyName>Apps.PropioOne</AssemblyName>
     </PropertyGroup>
 
