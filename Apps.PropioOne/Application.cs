@@ -7,7 +7,7 @@ public class Application : IApplication, ICategoryProvider
 {
     public IEnumerable<ApplicationCategory> Categories
     {
-        get => [ApplicationCategory.CatAndTms];
+        get => [ApplicationCategory.LspPortal];
         set { }
     }
 
