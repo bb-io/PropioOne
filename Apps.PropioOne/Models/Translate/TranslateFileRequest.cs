@@ -15,21 +15,21 @@ namespace Apps.PropioOne.Models.Translate
         public FileReference File { get; set; } = default!;
 
         [Display("Project ID")]
-        public string? ProjectId { get; set; }
+        public string ProjectId { get; set; }
 
         [Display("Source language")]
         [DataSource(typeof(LanguageDataHandler))]
-        public string? SourceLanguage { get; set; }
+        public string SourceLanguage { get; set; }
 
         [Display("Target language")]
         [DataSource(typeof(LanguageDataHandler))]
-        public string? TargetLanguage{ get; set; }
+        public string TargetLanguage{ get; set; }
 
         [Display("Domain")]
-        public string? Domain { get; set; }
+        public string Domain { get; set; }
 
         [Display("Provider")]
-        public string? Provider { get; set; }
+        public string Provider { get; set; }
 
         [Display("Client application")]
         public string? ClientApplication { get; set; }

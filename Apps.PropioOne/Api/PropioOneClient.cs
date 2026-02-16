@@ -14,6 +14,7 @@ public class PropioOneClient : BlackBirdRestClient
     public PropioOneClient(IEnumerable<AuthenticationCredentialsProvider> creds) : base(new()
     {
         BaseUrl = new Uri(creds.Get(CredsNames.Url).Value),
+        MaxTimeout = 600000
     })
     {
         var token =  GetToken(creds).GetAwaiter().GetResult();

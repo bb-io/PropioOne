@@ -78,7 +78,7 @@ namespace Apps.PropioOne.Actions
 
         private async Task<QualityEstimationResponse> ReviewWithBlackbird(QualityEstimationRequest input)
         {
-            var threshold = input.Threshold;
+            var threshold = input.Threshold ?? 0.8;
             if (threshold < 0 || threshold > 1)
                 throw new PluginMisconfigurationException("Threshold must be in range 0..1.");
 
@@ -233,9 +233,6 @@ namespace Apps.PropioOne.Actions
             };
         }
 
-        private static double Normalize01(double value)
-        => value > 1.0 ? value / 100.0 : value;
-
         private static async Task<byte[]> ReadAllBytesAsync(Stream s)
         {
             using var ms = new MemoryStream();
@@ -300,7 +297,6 @@ namespace Apps.PropioOne.Actions
             var api = await Client.ExecuteWithErrorHandling<BasicQeApiResponse>(request);
 
             var avg = api.BasicQEscoreAVG ?? 0.0;
-            var normalized = Normalize01(avg);
 
             return new QualityEstimationResponse
             {
@@ -308,7 +304,7 @@ namespace Apps.PropioOne.Actions
                 TotalSegmentsProcessed = 0,
                 TotalSegmentsFinalized = 0,
                 TotalSegmentsUnderThreshhold = 0,
-                AverageMetric = (float)normalized,
+                AverageMetric = (float)avg,
                 PercentageSegmentsUnderThreshhold = 0f
             };
         }
