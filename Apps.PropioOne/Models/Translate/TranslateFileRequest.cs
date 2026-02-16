@@ -1,4 +1,5 @@
-﻿using Apps.PropioOne.Handlers;
+﻿using Apps.PropioOne.DataHandlers.Static;
+using Apps.PropioOne.Handlers;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
@@ -36,8 +37,12 @@ namespace Apps.PropioOne.Models.Translate
         [Display("Document name")]
         public string? DocumentName { get; set; }
 
-        //[Display("File translation strategy", Description = "blackbird (segment-based) or propio (native, future)")]
-        //public string? FileTranslationStrategy { get; set; }
+        [Display("Job ID", Description = "Optional. If empty, a random job id will be generated.")]
+        public int? JobId { get; set; }
+
+        [Display("File translation strategy", Description = "blackbird (segment-based) or propio (native document translation)")]
+        [StaticDataSource(typeof(FileTranslationStrategyHandler))]
+        public string? FileTranslationStrategy { get; set; }
 
         [Display("Output file handling", Description = "original = return original format; otherwise returns XLIFF")]
         [StaticDataSource(typeof(ProcessFileFormatHandler))]

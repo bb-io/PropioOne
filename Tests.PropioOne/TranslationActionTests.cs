@@ -40,9 +40,10 @@ namespace Tests.PropioOne
                 Provider = "Microsoft",
                 File = new()
                 {
-                    Name = "taus.xliff"
+                    Name = "340613_source.html"
                 },
-                OutputFileHandling = "original"
+                FileTranslationStrategy = "propio"
+                //OutputFileHandling = "original"
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);

@@ -19,7 +19,13 @@ Documentation coming soon.
 ### Translation
 
 - **Translate text**: Translates the provided text from the source language to the target language.
-- **Translate** Translates files from a source language to a target language using
+- **Translate** Translates files from a source language to a target language using. Supported files: blackbird strategy(Xliff, html), propio statery(DOCX, XLSX, PPTX, HTML, XML, JSON)
+
+### Review
+
+- **Review text** : Reviews the provided source and target text.
+- **Review** : Reviews the provided source and target files. Supported files: blackbird strategy(Xliff), propio statery(DOCX, XLSX, PPTX, HTML, XML, JSON). Blackbird startefy requires only source file, Propio strategu requires source and target files.
+
 
 ## Feedback
 
