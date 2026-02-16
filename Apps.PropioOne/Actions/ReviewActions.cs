@@ -296,7 +296,7 @@ namespace Apps.PropioOne.Actions
 
             var api = await Client.ExecuteWithErrorHandling<BasicQeApiResponse>(request);
 
-            var avg = api.BasicQEscoreAVG ?? 0.0;
+            var avg = api.BasicQEscoreAVG > 1.0 ? api.BasicQEscoreAVG / 100.0 : api.BasicQEscoreAVG;
 
             return new QualityEstimationResponse
             {

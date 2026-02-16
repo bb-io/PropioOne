@@ -450,8 +450,6 @@ namespace Apps.PropioOne.Actions
             return baseName + ext;
         }
 
-
-        //helpers
         private static int GetClientIdFromCreds(InvocationContext ctx)
         {
             string? clientIdRaw = ctx.AuthenticationCredentialsProviders

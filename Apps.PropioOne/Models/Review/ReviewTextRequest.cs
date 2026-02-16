@@ -1,4 +1,6 @@
-﻿using Blackbird.Applications.Sdk.Common;
+﻿using Apps.PropioOne.Handlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 using Blackbird.Applications.SDK.Blueprints.Interfaces.Review;
 
 namespace Apps.PropioOne.Models.Review
@@ -15,9 +17,11 @@ namespace Apps.PropioOne.Models.Review
         public string? Domain { get; set; } = "General Vocabulary";
 
         [Display("Source language")]
+        [DataSource(typeof(LanguageDataHandler))]
         public string SourceLanguage { get; set; }
 
         [Display("Target language")]
+        [DataSource(typeof(LanguageDataHandler))]
         public string TargetLanguage { get; set; }
     }
 }
