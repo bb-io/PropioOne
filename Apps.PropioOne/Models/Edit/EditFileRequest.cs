@@ -1,5 +1,6 @@
 ﻿using Apps.PropioOne.Handlers;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Blueprints.Handlers;
@@ -13,7 +14,7 @@ namespace Apps.PropioOne.Models.Edit
         public FileReference File { get; set; }
 
         [Display("Output file handling")]
-        [DataSource(typeof(ProcessFileFormatHandler))]
+        [StaticDataSource(typeof(ProcessFileFormatHandler))]
         public string? OutputFileHandling { get; set; }
 
         [Display("Source language")]
