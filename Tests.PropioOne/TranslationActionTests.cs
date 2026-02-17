@@ -27,7 +27,32 @@ namespace Tests.PropioOne
         }
 
         [TestMethod]
-        public async Task Translate_works()
+        public async Task Translate_propio_strategy_works()
+        {
+
+            var action = new TranslationActions(InvocationContext, FileManager);
+            var response = await action.Translate(new()
+            {
+                ProjectId = "1849777",
+                SourceLanguage = "en-US",
+                TargetLanguage = "es-ES",
+                Domain = "General Vocabulary",
+                Provider = "Microsoft",
+                File = new()
+                {
+                    Name = "340613_source.html"
+                },
+                FileTranslationStrategy = "propio"
+                //OutputFileHandling = "original"
+            });
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);
+            Console.WriteLine(json);
+            Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public async Task Translate_blackbird_strategy_works()
         {
 
             var action = new TranslationActions(InvocationContext, FileManager);
@@ -42,7 +67,8 @@ namespace Tests.PropioOne
                 {
                     Name = "taus.xliff"
                 },
-                OutputFileHandling = "original"
+                FileTranslationStrategy = "blackbird"
+                //OutputFileHandling = "original"
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);

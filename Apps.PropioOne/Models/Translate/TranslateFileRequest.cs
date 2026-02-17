@@ -1,4 +1,5 @@
-﻿using Apps.PropioOne.Handlers;
+﻿using Apps.PropioOne.DataHandlers.Static;
+using Apps.PropioOne.Handlers;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
@@ -14,21 +15,21 @@ namespace Apps.PropioOne.Models.Translate
         public FileReference File { get; set; } = default!;
 
         [Display("Project ID")]
-        public string? ProjectId { get; set; }
+        public string ProjectId { get; set; }
 
         [Display("Source language")]
         [DataSource(typeof(LanguageDataHandler))]
-        public string? SourceLanguage { get; set; }
+        public string SourceLanguage { get; set; }
 
         [Display("Target language")]
         [DataSource(typeof(LanguageDataHandler))]
-        public string? TargetLanguage{ get; set; }
+        public string TargetLanguage{ get; set; }
 
         [Display("Domain")]
-        public string? Domain { get; set; }
+        public string Domain { get; set; }
 
         [Display("Provider")]
-        public string? Provider { get; set; }
+        public string Provider { get; set; }
 
         [Display("Client application")]
         public string? ClientApplication { get; set; }
@@ -36,8 +37,12 @@ namespace Apps.PropioOne.Models.Translate
         [Display("Document name")]
         public string? DocumentName { get; set; }
 
-        //[Display("File translation strategy", Description = "blackbird (segment-based) or propio (native, future)")]
-        //public string? FileTranslationStrategy { get; set; }
+        [Display("Job ID", Description = "Optional. If empty, a random job id will be generated.")]
+        public int? JobId { get; set; }
+
+        [Display("File translation strategy", Description = "blackbird (segment-based) or propio (native document translation)")]
+        [StaticDataSource(typeof(FileTranslationStrategyHandler))]
+        public string? FileTranslationStrategy { get; set; }
 
         [Display("Output file handling", Description = "original = return original format; otherwise returns XLIFF")]
         [StaticDataSource(typeof(ProcessFileFormatHandler))]

@@ -13,7 +13,9 @@ using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
 using Blackbird.Filters.Xliff.Xliff1;
 using RestSharp;
+using System.Diagnostics;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -84,13 +86,13 @@ namespace Apps.PropioOne.Actions
         [Action("Translate", Description = "Translate a file")]
         public async Task<FileTranslationResponse> Translate([ActionParameter] TranslateFileRequest input)
         {
-            //var strategy = input.FileTranslationStrategy?.ToLowerInvariant() ?? "blackbird";
-            //if (strategy == "propio")
-            //{
-            //    return await TranslateWithPropioNative(input);
-            //}
-            // default: "blackbird"
+            var strategy = input.FileTranslationStrategy?.ToLowerInvariant() ?? "blackbird";
+            if (strategy == "propio")
+            {
+                return await TranslateWithPropioNative(input);
+            }
 
+            // default: blackbird
             try
             {
                 using var stream = await fileManagement.DownloadAsync(input.File);
@@ -273,8 +275,181 @@ namespace Apps.PropioOne.Actions
                    ?? new List<string>();
         }
 
+        private async Task<FileTranslationResponse> TranslateWithPropioNative(TranslateFileRequest input)
+        {
+            var clientId = GetClientIdFromCreds(invocationContext);
+            var projectId = ParseProjectId(input.ProjectId);
 
-        //helpers
+            if (string.IsNullOrWhiteSpace(input.SourceLanguage) || string.IsNullOrWhiteSpace(input.TargetLanguage))
+                throw new PluginMisconfigurationException("Source or target language not defined.");
+
+            if (string.IsNullOrWhiteSpace(input.Domain))
+                throw new PluginApplicationException("Domain must be specified.");
+
+            var originalName = input.File?.Name ?? "file";
+            var safeMultipartName = SanitizeMultipartFileName(originalName);
+
+            string documentId;
+
+            using (var stream = await fileManagement.DownloadAsync(input.File))
+            {
+                var bytes = await ReadAllBytesAsync(stream);
+
+                documentId = await UploadDocumentForTranslation(
+                    bytes,
+                    safeMultipartName,
+                    clientId,
+                    projectId,
+                    input);
+            }
+
+            if (string.IsNullOrWhiteSpace(documentId))
+                throw new PluginApplicationException("No documentId returned after file upload.");
+
+            var polls = 0;
+
+            while (true)
+            {
+                await Task.Delay(2000);
+
+                var status = await GetDocumentStatus(documentId);
+
+                var st = status?.Status?.Trim();
+                if (string.IsNullOrWhiteSpace(st))
+                    throw new PluginApplicationException("Document status response did not contain 'status'.");
+
+                if (st.Equals("Queued", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (st.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                    break;
+
+                var details = string.Join(" | ",
+                    new[] { status?.Error, status?.TranslationDetails }
+                        .Where(x => !string.IsNullOrWhiteSpace(x)));
+
+                throw new PluginApplicationException($"Document translation finished with status '{st}'. {details}");
+            }
+
+            var link = await GetTranslatedFileLink(documentId);
+            if (string.IsNullOrWhiteSpace(link?.FileUrl))
+                throw new PluginApplicationException("Translated file URL was not returned.");
+
+            var translatedBytes = await DownloadFromPublicUrl(link.FileUrl);
+
+            var outName = !string.IsNullOrWhiteSpace(link.FileName) ? link.FileName : originalName;
+
+            var outFile = await fileManagement.UploadAsync(
+                new MemoryStream(translatedBytes),
+                "application/octet-stream",
+                outName);
+
+            return new FileTranslationResponse { File = outFile };
+        }
+
+        private async Task<string> UploadDocumentForTranslation(
+            byte[] fileBytes,
+            string fileName,
+            int clientId,
+            int projectId,
+            TranslateFileRequest input)
+        {
+            var model = new PropioDocumentTranslationModel
+            {
+                JobId = ResolveJobId(input.JobId),
+                ClientId = clientId,
+                ProjectId = projectId,
+                ClientApplication = input.ClientApplication ?? "Blackbird PropioOne",
+                Domain = input.Domain,
+                Provider = input.Provider,
+                TranslationDirection = new PropioTranslationDirection
+                {
+                    SourceLanguage = input.SourceLanguage,
+                    TargetLanguage = input.TargetLanguage
+                }
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            var request = new RestRequest("/api/v1/Translation/Document", Method.Post)
+            {
+                AlwaysMultipartFormData = true
+            };
+
+            request.AddFile("DocumentToTranslate", fileBytes, fileName);
+            request.AddParameter("TranslationModel", JsonSerializer.Serialize(model, jsonOptions));
+
+            var resp = await Client.ExecuteWithErrorHandling<string>(request);
+            return resp?.Trim().Trim('"') ?? string.Empty;
+        }
+
+        private async Task<PropioDocumentStatusResponse> GetDocumentStatus(string documentId)
+        {
+            var request = new RestRequest($"/api/v1/Translation/Document/{documentId}", Method.Get);
+            return await Client.ExecuteWithErrorHandling<PropioDocumentStatusResponse>(request);
+        }
+
+        private async Task<PropioTranslatedFileLinkResponse> GetTranslatedFileLink(string documentId)
+        {
+            var request = new RestRequest($"/api/v1/Translation/Document/{documentId}/Translated", Method.Get);
+            return await Client.ExecuteWithErrorHandling<PropioTranslatedFileLinkResponse>(request);
+        }
+
+        private static async Task<byte[]> DownloadFromPublicUrl(string url)
+        {
+            var client = new RestClient(url);
+            var request = new RestRequest("", Method.Get);
+
+            var response = await client.ExecuteAsync(request);
+            if (!response.IsSuccessful || response.RawBytes == null)
+                throw new PluginApplicationException($"Failed to download translated file. HTTP {(int)response.StatusCode} {response.StatusDescription}");
+
+            return response.RawBytes;
+        }
+
+        private static int ResolveJobId(int? inputJobId)
+        {
+            if (inputJobId.HasValue)
+            {
+                if (inputJobId.Value <= 0)
+                    throw new PluginMisconfigurationException("Job ID must be a positive integer.");
+                return inputJobId.Value;
+            }
+
+            return RandomNumberGenerator.GetInt32(1, int.MaxValue);
+        }
+        private static async Task<byte[]> ReadAllBytesAsync(Stream s)
+        {
+            using var ms = new MemoryStream();
+            await s.CopyToAsync(ms);
+            return ms.ToArray();
+        }
+
+        private static string SanitizeMultipartFileName(string fileName)
+        {
+            fileName = Path.GetFileName(fileName);
+
+            var ext = Path.GetExtension(fileName);
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+
+            baseName = new string(baseName.Where(c => !char.IsControl(c)).ToArray());
+            baseName = baseName.Replace("\"", "'");
+            baseName = baseName.Replace("\\", "_");
+
+            foreach (var ch in Path.GetInvalidFileNameChars())
+                baseName = baseName.Replace(ch, '_');
+
+            baseName = baseName.Trim();
+            if (string.IsNullOrWhiteSpace(baseName))
+                baseName = "file";
+
+            return baseName + ext;
+        }
+
         private static int GetClientIdFromCreds(InvocationContext ctx)
         {
             string? clientIdRaw = ctx.AuthenticationCredentialsProviders
