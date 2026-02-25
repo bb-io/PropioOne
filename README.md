@@ -13,13 +13,13 @@ Documentation coming soon.
 - **Create project**: Creates a new project.
 - **Get project**: Retrieves details of a specific project.
 - **Cancel project**: Cancels an existing project.
-- **Download translated target file** : Downloads the translated target file for a given project.
-- **Download all translated files** : Downloads the translated target files.
+- **Download translated target file**: Downloads the translated target file for a given project.
+- **Download all translated files**: Downloads the translated target files.
 
 ### Translation
 
 - **Translate text**: Translates the provided text from the source language to the target language.
-- **Translate** Translates files from a source language to a target language. Supported files: blackbird strategy (XLIFF, HTML), propio strategy (DOCX, XLSX, PPTX, HTML, XML, JSON).
+- **Translate**: Translates files from a source language to a target language. Supported files: blackbird strategy (XLIFF, HTML), propio strategy (DOCX, XLSX, PPTX, HTML, XML, JSON).
 
 ### Review
 
