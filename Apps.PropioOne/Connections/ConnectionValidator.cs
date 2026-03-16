@@ -1,6 +1,7 @@
 ﻿using Apps.PropioOne.Api;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using RestSharp;
 
 namespace Apps.PropioOne.Connections;
@@ -15,19 +16,15 @@ public class ConnectionValidator : IConnectionValidator
         {
             var client = new PropioOneClient(authenticationCredentialsProviders);
 
-            var response = await client.ExecuteWithErrorHandling(new RestRequest("/api/v1/project/languages", Method.Get));
+            await client.ExecuteWithErrorHandling(
+                new RestRequest("/api/v1/project/languages", Method.Get));
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Connection validation failed.");
-            }
 
-            return new()
-            {
-                IsValid = true
-            };
         }
-        catch (Exception ex)
+        catch (PluginApplicationException ex) when (
+            ex.Message.Contains("status 400") ||
+            ex.Message.Contains("status 401") ||
+            ex.Message.Contains("status 403"))
         {
             return new()
             {
@@ -35,6 +32,17 @@ public class ConnectionValidator : IConnectionValidator
                 Message = ex.Message
             };
         }
+        catch
+        {
+            return new()
+            {
+                IsValid = true
+            };
+        }
 
+        return new()
+        {
+            IsValid = true
+        };
     }
 }

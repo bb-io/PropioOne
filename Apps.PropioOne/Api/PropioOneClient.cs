@@ -23,8 +23,12 @@ public class PropioOneClient : BlackBirdRestClient
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
-        var error = JsonConvert.DeserializeObject(response.Content);
-        throw new PluginApplicationException($"{error}");
+        var error = string.IsNullOrWhiteSpace(response.Content)
+             ? "Empty response content"
+             : response.Content;
+
+        return new PluginApplicationException(
+            $"Error: status {(int)response.StatusCode} ({response.StatusCode}), body: {error}");
     }
 
     public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
