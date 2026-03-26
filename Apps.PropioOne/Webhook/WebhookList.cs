@@ -7,10 +7,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Apps.PropioOne.Webhook
 {
-    [WebhookList("Project")]
+    [WebhookList("Order")]
     public class WebhookList(InvocationContext invocationContext) : PropioOneInvocable(invocationContext)
     {
-        [Webhook("On project created", typeof(ProjectNewHandler), Description = "On new project created")]
+        [Webhook("On order created", typeof(ProjectNewHandler), Description = "On new order created")]
         public Task<WebhookResponse<ProjectWebhookResponse>> ProjectCreation(
             WebhookRequest webhookRequest,
             [WebhookParameter] ProjectWebhookSettings settings)

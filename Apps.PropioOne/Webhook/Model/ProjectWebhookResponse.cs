@@ -10,7 +10,7 @@ namespace Apps.PropioOne.Webhook.Model
         public string Event { get; set; } = default!;
 
         [JsonProperty("projectNumber")]
-        [Display("Project number")]
+        [Display("Order number")]
         public string ProjectNumber { get; set; } = default!;
 
         [JsonProperty("sourceFileNumber")]

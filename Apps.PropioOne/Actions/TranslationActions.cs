@@ -25,7 +25,7 @@ namespace Apps.PropioOne.Actions
     public class TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagement) : PropioOneInvocable(invocationContext)
     {
         [BlueprintActionDefinition(BlueprintAction.TranslateText)]
-        [Action("Translate text", Description = "Localize the text provided.")]
+        [Action("Translate text", Description = "Localize the text provided using MT.")]
         public async Task<TranslateTextResponse> TranslateText([ActionParameter] TranslateTextInput input)
         {
             string? clientIdRaw = invocationContext.AuthenticationCredentialsProviders.FirstOrDefault(x => x.KeyName == CredsNames.ClientId)?.Value;
@@ -37,10 +37,10 @@ namespace Apps.PropioOne.Actions
                 throw new PluginMisconfigurationException($"Client ID must be an integer. Got: '{clientIdRaw}'.");
 
             if (string.IsNullOrWhiteSpace(input.ProjectId))
-                throw new PluginApplicationException("ProjectId must be specified.");
+                throw new PluginApplicationException("Order ID must be specified.");
 
             if (!int.TryParse(input.ProjectId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var projectId))
-                throw new PluginApplicationException($"ProjectId must be an integer. Got: '{input.ProjectId}'.");
+                throw new PluginApplicationException($"Order ID must be an integer. Got: '{input.ProjectId}'.");
 
             var body = new TranslateTextRequest
             {
@@ -83,7 +83,7 @@ namespace Apps.PropioOne.Actions
         }
 
         [BlueprintActionDefinition(BlueprintAction.TranslateFile)]
-        [Action("Translate", Description = "Translate a file")]
+        [Action("Translate", Description = "Translate a file using MT")]
         public async Task<FileTranslationResponse> Translate([ActionParameter] TranslateFileRequest input)
         {
             var strategy = input.FileTranslationStrategy?.ToLowerInvariant() ?? "blackbird";
@@ -467,10 +467,10 @@ namespace Apps.PropioOne.Actions
         private static int ParseProjectId(string? projectIdRaw)
         {
             if (string.IsNullOrWhiteSpace(projectIdRaw))
-                throw new PluginApplicationException("ProjectId must be specified.");
+                throw new PluginApplicationException("Order ID must be specified.");
 
             if (!int.TryParse(projectIdRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var projectId))
-                throw new PluginApplicationException($"ProjectId must be an integer. Got: '{projectIdRaw}'.");
+                throw new PluginApplicationException($"Order ID must be an integer. Got: '{projectIdRaw}'.");
 
             return projectId;
         }

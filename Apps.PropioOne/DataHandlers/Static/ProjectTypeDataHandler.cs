@@ -9,9 +9,7 @@ public class ProjectTypeDataHandler : IStaticDataSourceItemHandler
         return new List<DataSourceItem>
         {
             new DataSourceItem("Standard", "Standard"),
-            new DataSourceItem("iTracTMS", "iTracTMS"),
             new DataSourceItem("RawMT", "Raw MT"),
-            new DataSourceItem("Workflow", "Workflow"),
         };
     }
 }

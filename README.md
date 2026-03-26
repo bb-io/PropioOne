@@ -8,18 +8,18 @@ Blackbird is the new automation backbone for the language technology industry. B
 
 Documentation coming soon.
 
-### Project
+### Order
 
-- **Create project**: Creates a new project.
-- **Get project**: Retrieves details of a specific project.
-- **Cancel project**: Cancels an existing project.
-- **Download translated target file**: Downloads the translated target file for a given project.
-- **Download all translated files**: Downloads the translated target files.
+- **Create order**: Creates a new order.
+- **Get order**: Retrieves details of a specific order.
+- **Cancel order**: Cancels an existing order.
+- **Download translated target file**: Downloads the translated target file for a given order.
+- **Download all translated files**: Downloads the translated target files for a given order.
 
 ### Translation
 
-- **Translate text**: Translates the provided text from the source language to the target language.
-- **Translate**: Translates files from a source language to a target language. Supported files: blackbird strategy (XLIFF, HTML), propio strategy (DOCX, XLSX, PPTX, HTML, XML, JSON).
+- **Translate text**: Translates the provided text from the source language to the target language using MT.
+- **Translate**: Translates files from a source language to a target language using MT. Supported files: blackbird strategy (XLIFF, HTML), propio strategy (DOCX, XLSX, PPTX, HTML, XML, JSON).
 
 ### Review
 

@@ -17,7 +17,7 @@ namespace Apps.PropioOne.Actions
     public class EditActions(InvocationContext invocationContext, IFileManagementClient fileManagement) : PropioOneInvocable(invocationContext)
     {
         [BlueprintActionDefinition(BlueprintAction.EditFile)]
-        [Action("Edit", Description = "Edit a translation using Proprio APE. Assumes translated content was produced earlier.")]
+        [Action("Edit", Description = "Edit a translation using Propio APE. Assumes translated content was produced earlier.")]
         public async Task<EditFileResponse> Edit([ActionParameter] EditFileRequest input)
         {
             await using var stream = await fileManagement.DownloadAsync(input.File);

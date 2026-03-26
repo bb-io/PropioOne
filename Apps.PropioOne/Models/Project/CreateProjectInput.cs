@@ -10,10 +10,10 @@ namespace Apps.PropioOne.Models.Project
 {
     public class CreateProjectInput
     {
-        [Display("Project name")]
+        [Display("Order name")]
         public string ProjectName { get; set; } = default!;
 
-        [Display("Project type")]
+        [Display("Order type")]
         [StaticDataSource(typeof(ProjectTypeDataHandler))]
         public string? ProjectType { get; set; }
 

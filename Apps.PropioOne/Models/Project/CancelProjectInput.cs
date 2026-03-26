@@ -4,7 +4,7 @@ namespace Apps.PropioOne.Models.Project
 {
     public class CancelProjectInput
     {
-        [Display("Project ID")]
+        [Display("Order ID")]
         public string ProjectId { get; set; } = default!;
 
         [Display("Reason")]

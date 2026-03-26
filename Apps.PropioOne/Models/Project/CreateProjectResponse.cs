@@ -5,7 +5,7 @@ namespace Apps.PropioOne.Models.Project
 {
     public class CreateProjectResponse
     {
-        [Display("Project ID")]
+        [Display("Order ID")]
         [JsonProperty("projectNumber")]
         public string ProjectId { get; set; } = default!;
 
@@ -13,7 +13,7 @@ namespace Apps.PropioOne.Models.Project
         [JsonProperty("status")]
         public string Status { get; set; } = default!;
 
-        [Display("Project details")]
+        [Display("Order details")]
         public ProjectStatusResponse? Project { get; set; }
     }
 }
