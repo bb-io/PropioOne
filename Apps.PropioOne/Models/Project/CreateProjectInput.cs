@@ -17,10 +17,6 @@ namespace Apps.PropioOne.Models.Project
         [StaticDataSource(typeof(ProjectTypeDataHandler))]
         public string? ProjectType { get; set; }
 
-        [Display("Translation file type")]
-        [StaticDataSource(typeof(TranslationFileTypeDataHandler))]
-        public string? TranslationFileType { get; set; }
-
         [Display("Source language")]
         [DataSource(typeof(LanguageDataHandler))]
         public string SourceLanguageCode { get; set; } = default!;

@@ -19,7 +19,6 @@ public class ProjectActionTests : TestBase
             SourceFile = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name= "taus.xliff" },
             DueDate = DateTime.UtcNow.AddDays(7),
             ProjectType= "Standard",
-            TranslationFileType = "Form",
             ReferenceNumber = "REF123",
             Instructions = "Please translate this document."
         });

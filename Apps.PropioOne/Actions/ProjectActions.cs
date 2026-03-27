@@ -56,17 +56,11 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             ? "Standard"
             : input.ProjectType!;
 
-        var translationFileType = string.IsNullOrWhiteSpace(input.TranslationFileType)
-            ? "Form"
-            : input.TranslationFileType!;
-
         var createBody = new CreateProjectRequest
         {
             ProjectType = projectType,
-            TranslationFileType = translationFileType,
             ProjectName = input.ProjectName,
             Notes = input.Instructions,
-
             RequestedDueDate = requestedDueDate,
             SourceLanguage = input.SourceLanguageCode,
 
