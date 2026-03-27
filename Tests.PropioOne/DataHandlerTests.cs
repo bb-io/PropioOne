@@ -26,6 +26,23 @@ public class DataHandlerTests : TestBase
     }
 
     [TestMethod]
+    public async Task ProjectStatusDataHandler_works()
+    {
+        var handler = new Apps.PropioOne.Handlers.ProjectStatusDataHandler(InvocationContext);
+        var result = await handler.GetDataAsync(new DataSourceContext
+        {
+        }, CancellationToken.None);
+
+        foreach (var item in result)
+        {
+            Console.WriteLine($"{item.DisplayName} - {item.Value}");
+        }
+
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Any());
+    }
+
+    [TestMethod]
     public async Task ProjectTypeDataHandler_works()
     {
         var handler = new ProjectTypeDataHandler();

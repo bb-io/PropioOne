@@ -8,23 +8,26 @@ Blackbird is the new automation backbone for the language technology industry. B
 
 Documentation coming soon.
 
-### Project
+### Order
 
-- **Create project**: Creates a new project.
-- **Get project**: Retrieves details of a specific project.
-- **Cancel project**: Cancels an existing project.
-- **Download translated target file**: Downloads the translated target file for a given project.
-- **Download all translated files**: Downloads the translated target files.
+- **Create order**: Creates a new order.
+- **Get order**: Retrieves details of a specific order.
+- **Cancel order**: Cancels an existing order.
+- **Download translated target file**: Downloads the translated target file for a given order.
+- **Download all translated files**: Downloads the translated target files for a given order.
 
-### Translation
+### AI / Machine Translation
 
-- **Translate text**: Translates the provided text from the source language to the target language.
-- **Translate**: Translates files from a source language to a target language. Supported files: blackbird strategy (XLIFF, HTML), propio strategy (DOCX, XLSX, PPTX, HTML, XML, JSON).
+- **Translate text**: Translates the provided text from the source language to the target language using MT.
+- **Translate**: Translates files from a source language to a target language using MT. Supported files: blackbird strategy (XLIFF, HTML), propio strategy (DOCX, XLSX, PPTX, HTML, XML, JSON).
+- **Edit text**: Post-edits already translated text.
+- **Edit**: Edits a translation using Propio APE. Assumes translated content was produced earlier.
+- **Review text**: Reviews translation quality using Basic quality estimation for source and target text.
+- **Review**: Reviews a translated file using Basic QE. Supports blackbird (segment-based) and propio (file-to-file) strategies.
 
-### Review
+### Webhooks
 
-- **Review text**: Reviews the provided source and target text.
-- **Review**: Reviews the provided source and target files. Supported files: blackbird strategy(Xliff), propio statery(DOCX, XLSX, PPTX, HTML, XML, JSON). Blackbird startefy requires only source file, Propio strategu requires source and target files.
+- **On order created**: Triggers when a new order is created.
 
 
 ## Feedback

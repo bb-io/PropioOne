@@ -6,7 +6,7 @@ namespace Apps.PropioOne.Models.Project
     public class ProjectStatusResponse
     {
         [JsonProperty("projectNumber")]
-        [Display("Project Id")]
+        [Display("Order ID")]
         public int ProjectNumber { get; set; }
 
         [JsonProperty("tmsReferenceNumber")]
@@ -18,15 +18,15 @@ namespace Apps.PropioOne.Models.Project
         public int CustomerNumber { get; set; }
 
         [JsonProperty("projectType")]
-        [Display("Project type")]
+        [Display("Order type")]
         public string ProjectType { get; set; } = default!;
 
         [JsonProperty("projectName")]
-        [Display("Project name")]
+        [Display("Order name")]
         public string ProjectName { get; set; } = default!;
 
         [JsonProperty("projectStatus")]
-        [Display("Project status")]
+        [Display("Order status")]
         public string ProjectStatus { get; set; } = default!;
 
         [JsonProperty("totalJobs")]
@@ -43,7 +43,7 @@ namespace Apps.PropioOne.Models.Project
             = Enumerable.Empty<ProjectSourceFileStatus>();
 
         [JsonProperty("projectOriginator")]
-        [Display("Project originator")]
+        [Display("Order originator")]
         public string? ProjectOriginator { get; set; }
 
         [JsonProperty("attributes")]

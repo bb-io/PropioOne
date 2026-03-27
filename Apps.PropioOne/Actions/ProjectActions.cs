@@ -11,10 +11,10 @@ using System.IO.Compression;
 
 namespace Apps.PropioOne.Actions;
 
-[ActionList("Project")]
+[ActionList("Order")]
 public class ProjectActions(InvocationContext invocationContext, IFileManagementClient fileManagement) : PropioOneInvocable(invocationContext)
 {
-    [Action("Create project", Description = "Creates project")]
+    [Action("Create order", Description = "Creates an order")]
     public async Task<CreateProjectResponse> CreateProject([ActionParameter] CreateProjectInput input)
     {
         using var sourceStream = await fileManagement.DownloadAsync(input.SourceFile);
@@ -66,7 +66,6 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             TranslationFileType = translationFileType,
             ProjectName = input.ProjectName,
             Notes = input.Instructions,
-
             RequestedDueDate = requestedDueDate,
             SourceLanguage = input.SourceLanguageCode,
 
@@ -113,11 +112,11 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         return createResponse;
     }
 
-    [Action("Get project", Description = "Gets detailed status information for a project")]
+    [Action("Get order", Description = "Gets detailed status information for an order")]
     public async Task<ProjectStatusResponse> GetProject([ActionParameter] GetProjectStatusInput input)
     {
         if (string.IsNullOrWhiteSpace(input.ProjectId))
-            throw new PluginApplicationException("Project ID cannot be empty.");
+            throw new PluginApplicationException("Order ID cannot be empty.");
 
         var statusRequest = new RestRequest($"/api/v1/project/{input.ProjectId}/status", Method.Get);
 
@@ -127,7 +126,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         return statusResponse;
     }
 
-    [Action("Download translated target file", Description = "Downloads a translated file for the specified project, file and target language")]
+    [Action("Download translated target file", Description = "Downloads a translated file for the specified order, file, and target language")]
     public async Task<DownloadTranslatedFileResponse> DownloadTranslatedTargetFile([ActionParameter] DownloadTranslatedFileInput input)
     {
         var request = new RestRequest(
@@ -171,7 +170,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         };
     }
 
-    [Action("Download all translated files",Description = "Downloads all translated files for the specified project and target language. Unzips by default and returns individual files.")]
+    [Action("Download all translated files",Description = "Downloads all translated files for the specified order and target language. Unzips by default and returns individual files.")]
     public async Task<DownloadAllTranslatedFilesResponse> DownloadAllTranslatedFiles([ActionParameter] DownloadAllTranslatedFilesInput input)
     {
         var request = new RestRequest($"/api/v1/project/{input.ProjectId}/target/{input.TargetLanguageCode}/zip",Method.Get);
@@ -216,7 +215,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         if (!files.Any())
         {
             throw new PluginApplicationException(
-                $"ZIP for project {input.ProjectId}, language {input.TargetLanguageCode} did not contain any files.");
+                $"ZIP for order {input.ProjectId}, language {input.TargetLanguageCode} did not contain any files.");
         }
 
         return new DownloadAllTranslatedFilesResponse
@@ -226,11 +225,11 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         };
     }
 
-    [Action("Cancel project", Description = "Cancels a project in Propio")]
+    [Action("Cancel order", Description = "Cancels an order in Propio")]
     public async Task CancelProject([ActionParameter] CancelProjectInput input)
     {
         if (string.IsNullOrWhiteSpace(input.ProjectId))
-            throw new PluginMisconfigurationException("Project ID cannot be empty.");
+            throw new PluginMisconfigurationException("Order ID cannot be empty.");
 
         var request = new RestRequest($"/api/v1/project/{input.ProjectId}", Method.Delete);
 

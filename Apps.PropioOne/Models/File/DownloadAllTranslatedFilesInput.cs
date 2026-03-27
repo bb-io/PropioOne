@@ -6,7 +6,7 @@ namespace Apps.PropioOne.Models.File
 {
     public class DownloadAllTranslatedFilesInput
     {
-        [Display("Project ID")]
+        [Display("Order ID")]
         public string ProjectId { get; set; } = default!;
 
         [Display("Target language")]

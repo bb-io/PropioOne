@@ -14,7 +14,7 @@ namespace Apps.PropioOne.Models.Translate
         [Display("File")]
         public FileReference File { get; set; } = default!;
 
-        [Display("Project ID")]
+        [Display("Order ID")]
         public string ProjectId { get; set; }
 
         [Display("Source language")]
