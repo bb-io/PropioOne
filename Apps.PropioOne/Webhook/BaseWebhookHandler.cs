@@ -121,6 +121,7 @@ namespace Apps.PropioOne.Webhook
 
             var deleteRequest =
                 new RestRequest($"/api/v1/project/webhook/{subscription.Id}", Method.Delete);
+            deleteRequest.AddQueryParameter("customerNumber", customerNumber);
 
             await client.ExecuteWithErrorHandling(deleteRequest);
         }
