@@ -65,5 +65,41 @@ namespace Apps.PropioOne.Webhook
 
             return Task.FromResult(response);
         }
+
+        [Webhook("On order in progress", typeof(ProjectInProgressHandler), Description = "On order in progress")]
+        public Task<WebhookResponse<ProjectWebhookResponse>> ProjectInProgress(
+            WebhookRequest webhookRequest,
+            [WebhookParameter] ProjectWebhookSettings settings)
+            => ProjectCreation(webhookRequest, settings);
+
+        [Webhook("On order completed", typeof(ProjectCompletedHandler), Description = "On order completed")]
+        public Task<WebhookResponse<ProjectWebhookResponse>> ProjectCompleted(
+            WebhookRequest webhookRequest,
+            [WebhookParameter] ProjectWebhookSettings settings)
+            => ProjectCreation(webhookRequest, settings);
+
+        [Webhook("On order canceled", typeof(ProjectCanceledHandler), Description = "On order canceled")]
+        public Task<WebhookResponse<ProjectWebhookResponse>> ProjectCanceled(
+            WebhookRequest webhookRequest,
+            [WebhookParameter] ProjectWebhookSettings settings)
+            => ProjectCreation(webhookRequest, settings);
+
+        [Webhook("On job completed", typeof(JobCompletedHandler), Description = "On job completed")]
+        public Task<WebhookResponse<ProjectWebhookResponse>> JobCompleted(
+            WebhookRequest webhookRequest,
+            [WebhookParameter] ProjectWebhookSettings settings)
+            => ProjectCreation(webhookRequest, settings);
+
+        [Webhook("On automation job completed", typeof(AutomationJobCompletedHandler), Description = "On automation job completed")]
+        public Task<WebhookResponse<ProjectWebhookResponse>> AutomationJobCompleted(
+            WebhookRequest webhookRequest,
+            [WebhookParameter] ProjectWebhookSettings settings)
+            => ProjectCreation(webhookRequest, settings);
+
+        [Webhook("On translation complete", typeof(TranslationCompleteHandler), Description = "On translation complete")]
+        public Task<WebhookResponse<ProjectWebhookResponse>> TranslationComplete(
+            WebhookRequest webhookRequest,
+            [WebhookParameter] ProjectWebhookSettings settings)
+            => ProjectCreation(webhookRequest, settings);
     }
 }
