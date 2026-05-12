@@ -79,7 +79,7 @@ namespace Apps.PropioOne.Webhook
 
             var client = new PropioOneClient(authProviders);
 
-            string? customerSegment = null;
+            int customerNumber;
 
             var clientId = invocationContext.AuthenticationCredentialsProviders.FirstOrDefault(x => x.KeyName == CredsNames.ClientId)?.Value;
 
@@ -88,13 +88,11 @@ namespace Apps.PropioOne.Webhook
 
             if (!string.IsNullOrWhiteSpace(clientId))
             {
-                if (!int.TryParse(clientId, out _))
+                if (!int.TryParse(clientId, out customerNumber))
                 {
                     throw new Exception(
                         $"Customer number must be an integer, got '{clientId}'.");
                 }
-
-                customerSegment = $"/{clientId}";
             }
             else
             {
@@ -103,7 +101,8 @@ namespace Apps.PropioOne.Webhook
             }
 
             var getRequest =
-                new RestRequest($"/api/v1/project/webhooks{customerSegment}", Method.Get);
+                new RestRequest("/api/v1/project/webhooks", Method.Get);
+            getRequest.AddQueryParameter("customerNumber", customerNumber);
 
             var webhooks =
                 await client.ExecuteWithErrorHandling<List<ProjectWebhookDto>>(getRequest);
@@ -121,7 +120,7 @@ namespace Apps.PropioOne.Webhook
                 return;
 
             var deleteRequest =
-                new RestRequest($"/api/v1/project/webhooks/{subscription.Id}", Method.Delete);
+                new RestRequest($"/api/v1/project/webhook/{subscription.Id}", Method.Delete);
 
             await client.ExecuteWithErrorHandling(deleteRequest);
         }
