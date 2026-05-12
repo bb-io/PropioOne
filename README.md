@@ -28,6 +28,12 @@ Documentation coming soon.
 ### Webhooks
 
 - **On order created**: Triggers when a new order is created.
+- **On order in progress**: Triggers when an order moves to in progress.
+- **On order completed**: Triggers when an order is completed.
+- **On order canceled**: Triggers when an order is canceled.
+- **On job completed**: Triggers when a job is completed.
+- **On automation job completed**: Triggers when an automation job is completed.
+- **On translation complete**: Triggers when translation is complete.
 
 
 ## Feedback
