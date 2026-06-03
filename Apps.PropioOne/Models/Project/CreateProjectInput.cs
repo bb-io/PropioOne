@@ -38,7 +38,7 @@ namespace Apps.PropioOne.Models.Project
         [Display("Instructions")]
         public string? Instructions { get; set; }
 
-        [Display("Source file")]
-        public FileReference SourceFile { get; set; } = default!;
+        [Display("Source files")]
+        public IEnumerable<FileReference> SourceFiles { get; set; } = Enumerable.Empty<FileReference>();
     }
 }

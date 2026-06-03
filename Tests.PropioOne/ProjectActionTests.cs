@@ -13,10 +13,14 @@ public class ProjectActionTests : TestBase
 
         var response = await action.CreateProject(new()
         {
-            ProjectName = "Test Project 1",
+            ProjectName = "Test Project Jun 3",
             SourceLanguageCode = "en",
             TargetLanguageCodes = new[] { "es" },
-            SourceFile = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name= "taus.xliff" },
+            SourceFiles = new[]
+            {
+                new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "taus.xliff" },
+                new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "test.txt" }
+            },
             DueDate = DateTime.UtcNow.AddDays(7),
             ProjectType= "Standard",
             TranslationFileType = "Form",
