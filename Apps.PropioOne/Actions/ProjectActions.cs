@@ -17,26 +17,23 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
     [Action("Create order", Description = "Creates an order")]
     public async Task<CreateProjectResponse> CreateProject([ActionParameter] CreateProjectInput input)
     {
-        using var sourceStream = await fileManagement.DownloadAsync(input.SourceFile);
+        var sourceFiles = input.SourceFiles?.ToList() ?? new List<FileReference>();
+        if (!sourceFiles.Any())
+            throw new PluginMisconfigurationException("At least one source file is required.");
 
-        var uploadRequest = new RestRequest("/api/v1/project/file/source", Method.Post)
-        {
-            AlwaysMultipartFormData = true
-        };
+        var targetLanguageCodes = input.TargetLanguageCodes.ToArray();
+        var sourceFileRequests = new List<SourceFileRequestModel>();
 
-        byte[] fileBytes;
-        using (var ms = new MemoryStream())
+        foreach (var sourceFile in sourceFiles)
         {
-            await sourceStream.CopyToAsync(ms);
-            fileBytes = ms.ToArray();
+            var sourceFileNumber = await UploadSourceFileAsync(sourceFile);
+            sourceFileRequests.Add(new SourceFileRequestModel
+            {
+                SourceFileNumber = sourceFileNumber,
+                TargetLanguages = targetLanguageCodes,
+                PageCount = null
+            });
         }
-
-        uploadRequest.AddFile("FileToUpload", fileBytes, input.SourceFile.Name);
-
-        var uploadResponse =
-            await Client.ExecuteWithErrorHandling<UploadSourceFileResponse>(uploadRequest);
-
-        var sourceFileNumber = uploadResponse.SourceFileNumber;     
 
         DateTime? requestedDueDate = null;
         if (input.DueDate.HasValue)
@@ -68,16 +65,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             Notes = input.Instructions,
             RequestedDueDate = requestedDueDate,
             SourceLanguage = input.SourceLanguageCode,
-
-            SourceFiles = new[]
-            {
-            new SourceFileRequestModel
-            {
-                SourceFileNumber = int.Parse(sourceFileNumber),
-                TargetLanguages = input.TargetLanguageCodes,
-                PageCount = null
-            }
-        },
+            SourceFiles = sourceFileRequests,
 
             Attributes = attributes.Any() ? attributes : null,
 
@@ -237,6 +225,36 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
     }
 
     //helpers
+
+    private async Task<int> UploadSourceFileAsync(FileReference sourceFile)
+    {
+        using var sourceStream = await fileManagement.DownloadAsync(sourceFile);
+
+        var uploadRequest = new RestRequest("/api/v1/project/file/source", Method.Post)
+        {
+            AlwaysMultipartFormData = true
+        };
+
+        byte[] fileBytes;
+        using (var ms = new MemoryStream())
+        {
+            await sourceStream.CopyToAsync(ms);
+            fileBytes = ms.ToArray();
+        }
+
+        uploadRequest.AddFile("FileToUpload", fileBytes, sourceFile.Name);
+
+        var uploadResponse =
+            await Client.ExecuteWithErrorHandling<UploadSourceFileResponse>(uploadRequest);
+
+        if (!int.TryParse(uploadResponse.SourceFileNumber, out var sourceFileNumber))
+        {
+            throw new PluginApplicationException(
+                $"Propio returned an invalid source file number for file '{sourceFile.Name}'.");
+        }
+
+        return sourceFileNumber;
+    }
 
     private static string GetContentTypeFromExtension(string fileName)
     {
