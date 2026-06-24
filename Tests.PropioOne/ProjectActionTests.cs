@@ -46,6 +46,19 @@ public class ProjectActionTests : TestBase
     }
 
     [TestMethod]
+    public async Task SearchProjects_works()
+    {
+        var action = new ProjectActions(InvocationContext, FileManager);
+
+        var response = await action.SearchProjects(new());
+
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);
+        Console.WriteLine(json);
+        Assert.IsNotNull(response);
+        Assert.IsNotNull(response.Items);
+    }
+
+    [TestMethod]
     public async Task DownloadTargetFile_works()
     {
         var action = new ProjectActions(InvocationContext, FileManager);

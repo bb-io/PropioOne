@@ -12,6 +12,7 @@ Documentation coming soon.
 
 - **Create order**: Creates a new order.
 - **Get order**: Retrieves details of a specific order.
+- **Search orders**: Retrieves orders for the connected customer with optional status and date filters.
 - **Cancel order**: Cancels an existing order.
 - **Download translated target file**: Downloads the translated target file for a given order.
 - **Download all translated files**: Downloads the translated target files for a given order.

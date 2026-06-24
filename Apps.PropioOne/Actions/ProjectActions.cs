@@ -1,5 +1,6 @@
 using Apps.PropioOne.Models.File;
 using Apps.PropioOne.Models.Project;
+using Apps.PropioOne.Constants;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
@@ -7,6 +8,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
+using System.Globalization;
 using System.IO.Compression;
 
 namespace Apps.PropioOne.Actions;
@@ -112,6 +114,59 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             await Client.ExecuteWithErrorHandling<ProjectStatusResponse>(statusRequest);
 
         return statusResponse;
+    }
+
+    [Action("Search orders", Description = "Searches orders for the connected customer")]
+    public async Task<SearchProjectsResponse> SearchProjects([ActionParameter] SearchProjectsInput input)
+    {
+        const int pageSize = 100;
+
+        if (input.FromDate.HasValue && input.ToDate.HasValue && input.FromDate.Value.Date > input.ToDate.Value.Date)
+            throw new PluginMisconfigurationException("From date cannot be later than to date.");
+
+        var customerNumber = GetCustomerNumberFromCreds();
+        var allItems = new List<SearchProjectItem>();
+        int? totalCount = null;
+        var pageNumber = 1;
+
+        while (true)
+        {
+            var request = new RestRequest($"/api/v1/{customerNumber}/projects", Method.Get);
+            request.AddQueryParameter("PageNumber", pageNumber);
+            request.AddQueryParameter("PageSize", pageSize);
+
+            if (!string.IsNullOrWhiteSpace(input.Status))
+                request.AddQueryParameter("status", input.Status);
+
+            if (input.FromDate.HasValue)
+                request.AddQueryParameter("FromDate", input.FromDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            if (input.ToDate.HasValue)
+                request.AddQueryParameter("ToDate", input.ToDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            var response = await Client.ExecuteWithErrorHandling<SearchProjectsPageResponse>(request);
+            totalCount ??= response.TotalCount;
+
+            var pageItems = response.Items?.ToList() ?? new List<SearchProjectItem>();
+            if (!pageItems.Any())
+                break;
+
+            allItems.AddRange(pageItems);
+
+            if (totalCount.HasValue && allItems.Count >= totalCount.Value)
+                break;
+
+            if (pageItems.Count < pageSize)
+                break;
+
+            pageNumber++;
+        }
+
+        return new SearchProjectsResponse
+        {
+            TotalCount = totalCount ?? allItems.Count,
+            Items = allItems
+        };
     }
 
     [Action("Download translated target file", Description = "Downloads a translated file for the specified order, file, and target language")]
@@ -294,5 +349,19 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
 
         var fileName = value[(index + key.Length)..].Trim('\"', ' ', ';');
         return string.IsNullOrWhiteSpace(fileName) ? null : fileName;
+    }
+
+    private int GetCustomerNumberFromCreds()
+    {
+        var clientIdRaw = invocationContext.AuthenticationCredentialsProviders
+            .FirstOrDefault(x => x.KeyName == CredsNames.ClientId)?.Value;
+
+        if (string.IsNullOrWhiteSpace(clientIdRaw))
+            throw new PluginMisconfigurationException("Client ID is missing in credentials.");
+
+        if (!int.TryParse(clientIdRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var customerNumber))
+            throw new PluginMisconfigurationException($"Client ID must be an integer. Got: '{clientIdRaw}'.");
+
+        return customerNumber;
     }
 }
