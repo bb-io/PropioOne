@@ -16,9 +16,6 @@ namespace Apps.PropioOne.Actions;
 [ActionList("Order")]
 public class ProjectActions(InvocationContext invocationContext, IFileManagementClient fileManagement) : PropioOneInvocable(invocationContext)
 {
-    private const int SearchOrdersPageSize = 100;
-    private const int SearchOrdersMaxPages = 1000;
-
     [Action("Create order", Description = "Creates an order")]
     public async Task<CreateProjectResponse> CreateProject([ActionParameter] CreateProjectInput input)
     {
@@ -122,6 +119,8 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
     [Action("Search orders", Description = "Searches orders for the connected customer")]
     public async Task<SearchProjectsResponse> SearchProjects([ActionParameter] SearchProjectsInput input)
     {
+        const int pageSize = 100;
+
         if (input.FromDate.HasValue && input.ToDate.HasValue && input.FromDate.Value.Date > input.ToDate.Value.Date)
             throw new PluginMisconfigurationException("From date cannot be later than to date.");
 
@@ -132,15 +131,9 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
 
         while (true)
         {
-            if (pageNumber > SearchOrdersMaxPages)
-            {
-                throw new PluginApplicationException(
-                    $"Search orders exceeded the maximum number of pages ({SearchOrdersMaxPages}).");
-            }
-
             var request = new RestRequest($"/api/v1/{customerNumber}/projects", Method.Get);
             request.AddQueryParameter("PageNumber", pageNumber);
-            request.AddQueryParameter("PageSize", SearchOrdersPageSize);
+            request.AddQueryParameter("PageSize", pageSize);
 
             if (!string.IsNullOrWhiteSpace(input.Status))
                 request.AddQueryParameter("status", input.Status);
@@ -163,7 +156,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             if (totalCount.HasValue && allItems.Count >= totalCount.Value)
                 break;
 
-            if (pageItems.Count < SearchOrdersPageSize)
+            if (pageItems.Count < pageSize)
                 break;
 
             pageNumber++;
