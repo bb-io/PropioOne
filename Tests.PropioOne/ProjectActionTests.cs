@@ -18,7 +18,7 @@ public class ProjectActionTests : TestBase
             TargetLanguageCodes = new[] { "es" },
             SourceFiles = new[]
             {
-                new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "taus.xliff" },
+                new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "café.xliff" },
                 new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "test.txt" }
             },
             DueDate = DateTime.UtcNow.AddDays(7),

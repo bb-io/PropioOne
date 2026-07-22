@@ -10,6 +10,7 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
 using System.Globalization;
 using System.IO.Compression;
+using System.Text;
 
 namespace Apps.PropioOne.Actions;
 
@@ -297,7 +298,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             fileBytes = ms.ToArray();
         }
 
-        uploadRequest.AddFile("FileToUpload", fileBytes, sourceFile.Name);
+        uploadRequest.AddFile("FileToUpload", fileBytes, GetAsciiSafeMultipartFileName(sourceFile.Name));
 
         var uploadResponse =
             await Client.ExecuteWithErrorHandling<UploadSourceFileResponse>(uploadRequest);
@@ -309,6 +310,45 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         }
 
         return sourceFileNumber;
+    }
+
+    private static string GetAsciiSafeMultipartFileName(string fileName)
+    {
+        fileName = Path.GetFileName(fileName);
+
+        var ext = Path.GetExtension(fileName);
+        var baseName = Path.GetFileNameWithoutExtension(fileName);
+
+        baseName = new string(baseName.Where(c => !char.IsControl(c)).ToArray());
+        baseName = baseName.Replace("\"", "'").Replace("\\", "_");
+
+        foreach (var ch in Path.GetInvalidFileNameChars())
+            baseName = baseName.Replace(ch, '_');
+
+        baseName = ToAsciiSafe(baseName);
+        if (string.IsNullOrWhiteSpace(baseName))
+            baseName = "file";
+
+        return baseName + ToAsciiSafe(ext);
+    }
+
+    // Transliterates diacritics (café -> cafe) and percent-encodes any remaining
+    // non-ASCII characters, so the value is always safe to use as a multipart
+    // Content-Disposition filename header, regardless of downstream ASCII-only checks.
+    private static string ToAsciiSafe(string value)
+    {
+        var normalized = value.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+
+        foreach (var ch in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.NonSpacingMark)
+                continue;
+
+            sb.Append(ch <= 127 ? ch.ToString() : Uri.EscapeDataString(ch.ToString()));
+        }
+
+        return sb.ToString().Trim();
     }
 
     private static string GetContentTypeFromExtension(string fileName)
