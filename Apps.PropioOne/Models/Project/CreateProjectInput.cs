@@ -35,6 +35,12 @@ namespace Apps.PropioOne.Models.Project
         [Display("Reference number")]
         public string? ReferenceNumber { get; set; }
 
+        [Display("Attribute Names")]
+        public IEnumerable<string>? AttributeNames { get; set; }
+
+        [Display("Attribute Values")]
+        public IEnumerable<string>? AttributeValues { get; set; }
+
         [Display("Instructions")]
         public string? Instructions { get; set; }
 

@@ -13,7 +13,7 @@ public class ProjectActionTests : TestBase
 
         var response = await action.CreateProject(new()
         {
-            ProjectName = "Test Project Jun 3",
+            ProjectName = "Test Project Sep 2",
             SourceLanguageCode = "en",
             TargetLanguageCodes = new[] { "es" },
             SourceFiles = new[]
@@ -25,7 +25,9 @@ public class ProjectActionTests : TestBase
             ProjectType= "Standard",
             TranslationFileType = "Form",
             ReferenceNumber = "REF123",
-            Instructions = "Please translate this document."
+            Instructions = "Please translate this document.",
+            AttributeNames = new[] { "Attribute1", "Attribute2" },
+            AttributeValues = new[] { "Value1", "Value2" }
         });
 
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);

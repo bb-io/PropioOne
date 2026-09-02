@@ -52,6 +52,24 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             });
         }
 
+        var attributeNames = input.AttributeNames?.ToList() ?? new List<string>();
+        var attributeValues = input.AttributeValues?.ToList() ?? new List<string>();
+
+        if (attributeNames.Count != attributeValues.Count)
+        {
+            throw new PluginMisconfigurationException(
+                "Attribute Names and Attribute Values must contain the same number of items.");
+        }
+
+        for (var i = 0; i < attributeNames.Count; i++)
+        {
+            attributes.Add(new ProjectAttribute
+            {
+                Name = attributeNames[i],
+                Value = attributeValues[i]
+            });
+        }
+
         var projectType = string.IsNullOrWhiteSpace(input.ProjectType)
             ? "Standard"
             : input.ProjectType!;
