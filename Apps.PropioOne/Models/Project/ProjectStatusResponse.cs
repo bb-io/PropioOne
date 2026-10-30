@@ -65,6 +65,10 @@ namespace Apps.PropioOne.Models.Project
         [JsonProperty("requesterName")]
         [Display("Requester name")]
         public string? RequesterName { get; set; }
+
+        [JsonProperty("quote")]
+        [Display("Quote details")]
+        public ProjectQuote? Quote { get; set; }
     }
 
     public class ProjectSourceFileStatus
@@ -104,5 +108,79 @@ namespace Apps.PropioOne.Models.Project
         [JsonProperty("translatedFilePath")]
         [Display("Translated file path")]
         public string? TranslatedFilePath { get; set; }
+    }
+
+    public class ProjectQuote
+    {
+        [JsonProperty("platformQuoteNumber")]
+        [Display("Quote number")]
+        public long PlatformQuoteNumber { get; set; }
+
+        [JsonProperty("quoteStatus")]
+        [Display("Quote status")]
+        public string? QuoteStatus { get; set; }
+
+        [JsonProperty("clientInvoiceId")]
+        [Display("Client invoice ID")]
+        public int? ClientInvoiceId { get; set; }
+
+        [JsonProperty("currency")]
+        [Display("Currency")]
+        public string? Currency { get; set; }
+
+        [JsonProperty("totalAmount")]
+        [Display("Total amount")]
+        public double? TotalAmount { get; set; }
+
+        [JsonProperty("totalNetAmount")]
+        [Display("Total net amount")]
+        public double? TotalNetAmount { get; set; }
+
+        [JsonProperty("vat")]
+        [Display("VAT")]
+        public double? Vat { get; set; }
+
+        [JsonProperty("finalTotalAmount")]
+        [Display("Final total amount")]
+        public double? FinalTotalAmount { get; set; }
+
+        [JsonProperty("rejectReason")]
+        [Display("Reject reason")]
+        public string? RejectReason { get; set; }
+
+        [JsonProperty("createdDate")]
+        [Display("Created date")]
+        public DateTime CreatedDate { get; set; }
+
+        [JsonProperty("quoteLineItems")]
+        [Display("Quote line items")]
+        public IEnumerable<ProjectQuoteLineItem>? QuoteLineItems { get; set; }
+    }
+
+    public class ProjectQuoteLineItem
+    {
+        [JsonProperty("lineItemIndex")]
+        [Display("Line item index")]
+        public int? LineItemIndex { get; set; }
+
+        [JsonProperty("lineItemHeader")]
+        [Display("Line item header")]
+        public string? LineItemHeader { get; set; }
+
+        [JsonProperty("lineItemWorkType")]
+        [Display("Line item work type")]
+        public string? LineItemWorkType { get; set; }
+
+        [JsonProperty("unitPrice")]
+        [Display("Unit price")]
+        public double? UnitPrice { get; set; }
+
+        [JsonProperty("netTotal")]
+        [Display("Net total")]
+        public double? NetTotal { get; set; }
+
+        [JsonProperty("quantity")]
+        [Display("Quantity")]
+        public double? Quantity { get; set; }
     }
 }

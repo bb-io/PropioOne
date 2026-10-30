@@ -26,6 +26,9 @@ namespace Apps.PropioOne.Models.Project
         public IEnumerable<SourceFileRequestModel> SourceFiles { get; set; }
             = Enumerable.Empty<SourceFileRequestModel>();
 
+        [JsonProperty("referenceFiles")]
+        public IEnumerable<ReferenceFileRequestModel>? ReferenceFiles { get; set; }
+
         [JsonProperty("attributes")]
         public IEnumerable<ProjectAttribute>? Attributes { get; set; }
 
@@ -55,6 +58,12 @@ namespace Apps.PropioOne.Models.Project
 
         [JsonProperty("pageCount")]
         public int? PageCount { get; set; }
+    }
+
+    public class ReferenceFileRequestModel
+    {
+        [JsonProperty("referenceFileNumber")]
+        public int ReferenceFileNumber { get; set; }
     }
 
     public class ProjectAttribute

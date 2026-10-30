@@ -10,8 +10,10 @@ Documentation coming soon.
 
 ### Order
 
-- **Create order**: Creates a new order.
-- **Get order**: Retrieves details of a specific order.
+- **Create order**: Creates a new order with source files and optional reference files.
+- **Get order**: Retrieves details of a specific order, including quote details when available.
+- **Accept quote**: Accepts the latest quote for an order.
+- **Reject quote**: Rejects the latest quote for an order.
 - **Search orders**: Retrieves orders for the connected customer with optional status and date filters.
 - **Cancel order**: Cancels an existing order.
 - **Download translated target file**: Downloads the translated target file for a given order.
