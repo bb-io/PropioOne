@@ -9,7 +9,7 @@ public class AcceptQuoteInput
     public string ProjectId { get; set; } = default!;
 
     [Display("Quote number")]
-    public long QuoteNumber { get; set; }
+    public string QuoteNumber { get; set; } = default!;
 }
 
 public class RejectQuoteInput
@@ -18,7 +18,7 @@ public class RejectQuoteInput
     public string ProjectId { get; set; } = default!;
 
     [Display("Quote number")]
-    public long QuoteNumber { get; set; }
+    public string QuoteNumber { get; set; } = default!;
 
     [Display("Reject reason")]
     public string RejectReason { get; set; } = default!;

@@ -149,11 +149,11 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
     [Action("Accept quote", Description = "Accepts the latest quote for an order")]
     public async Task<QuoteStatusUpdateResponse> AcceptQuote([ActionParameter] AcceptQuoteInput input)
     {
-        ValidateQuoteInput(input.ProjectId, input.QuoteNumber);
+        var quoteNumber = ValidateQuoteInput(input.ProjectId, input.QuoteNumber);
 
         return await UpdateQuoteStatus(input.ProjectId, new QuoteStatusUpdateRequest
         {
-            QuoteNumber = input.QuoteNumber,
+            QuoteNumber = quoteNumber,
             Status = "QuoteAccepted"
         });
     }
@@ -161,7 +161,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
     [Action("Reject quote", Description = "Rejects the latest quote for an order")]
     public async Task<QuoteStatusUpdateResponse> RejectQuote([ActionParameter] RejectQuoteInput input)
     {
-        ValidateQuoteInput(input.ProjectId, input.QuoteNumber);
+        var quoteNumber = ValidateQuoteInput(input.ProjectId, input.QuoteNumber);
 
         if (string.IsNullOrWhiteSpace(input.RejectReason))
             throw new PluginMisconfigurationException("Reject reason cannot be empty.");
@@ -171,7 +171,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
 
         return await UpdateQuoteStatus(input.ProjectId, new QuoteStatusUpdateRequest
         {
-            QuoteNumber = input.QuoteNumber,
+            QuoteNumber = quoteNumber,
             Status = "QuoteRejected",
             RejectReason = input.RejectReason
         });
@@ -415,13 +415,18 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         return await Client.ExecuteWithErrorHandling<QuoteStatusUpdateResponse>(request);
     }
 
-    private static void ValidateQuoteInput(string projectId, long quoteNumber)
+    private static long ValidateQuoteInput(string projectId, string quoteNumber)
     {
         if (string.IsNullOrWhiteSpace(projectId))
             throw new PluginMisconfigurationException("Order ID cannot be empty.");
 
-        if (quoteNumber <= 0)
-            throw new PluginMisconfigurationException("Quote number must be greater than zero.");
+        if (!long.TryParse(quoteNumber, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedQuoteNumber) ||
+            parsedQuoteNumber <= 0)
+        {
+            throw new PluginMisconfigurationException("Quote number must be a positive integer.");
+        }
+
+        return parsedQuoteNumber;
     }
 
     private static string GetAsciiSafeMultipartFileName(string fileName)

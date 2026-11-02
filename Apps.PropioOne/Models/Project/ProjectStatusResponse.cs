@@ -114,7 +114,7 @@ namespace Apps.PropioOne.Models.Project
     {
         [JsonProperty("platformQuoteNumber")]
         [Display("Quote number")]
-        public long PlatformQuoteNumber { get; set; }
+        public string PlatformQuoteNumber { get; set; } = default!;
 
         [JsonProperty("quoteStatus")]
         [Display("Quote status")]
