@@ -46,5 +46,8 @@ namespace Apps.PropioOne.Models.Project
 
         [Display("Source files")]
         public IEnumerable<FileReference> SourceFiles { get; set; } = Enumerable.Empty<FileReference>();
+
+        [Display("Reference files")]
+        public IEnumerable<FileReference>? ReferenceFiles { get; set; }
     }
 }

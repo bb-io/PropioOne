@@ -26,6 +26,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
 
         var targetLanguageCodes = input.TargetLanguageCodes.ToArray();
         var sourceFileRequests = new List<SourceFileRequestModel>();
+        var referenceFileRequests = new List<ReferenceFileRequestModel>();
 
         foreach (var sourceFile in sourceFiles)
         {
@@ -35,6 +36,15 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
                 SourceFileNumber = sourceFileNumber,
                 TargetLanguages = targetLanguageCodes,
                 PageCount = null
+            });
+        }
+
+        foreach (var referenceFile in input.ReferenceFiles ?? Enumerable.Empty<FileReference>())
+        {
+            var referenceFileNumber = await UploadReferenceFileAsync(referenceFile);
+            referenceFileRequests.Add(new ReferenceFileRequestModel
+            {
+                ReferenceFileNumber = referenceFileNumber
             });
         }
 
@@ -87,6 +97,7 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             RequestedDueDate = requestedDueDate,
             SourceLanguage = input.SourceLanguageCode,
             SourceFiles = sourceFileRequests,
+            ReferenceFiles = referenceFileRequests.Any() ? referenceFileRequests : null,
 
             Attributes = attributes.Any() ? attributes : null,
 
@@ -133,6 +144,37 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
             await Client.ExecuteWithErrorHandling<ProjectStatusResponse>(statusRequest);
 
         return statusResponse;
+    }
+
+    [Action("Accept quote", Description = "Accepts the latest quote for an order")]
+    public async Task<QuoteStatusUpdateResponse> AcceptQuote([ActionParameter] AcceptQuoteInput input)
+    {
+        var quoteNumber = ValidateQuoteInput(input.ProjectId, input.QuoteNumber);
+
+        return await UpdateQuoteStatus(input.ProjectId, new QuoteStatusUpdateRequest
+        {
+            QuoteNumber = quoteNumber,
+            Status = "QuoteAccepted"
+        });
+    }
+
+    [Action("Reject quote", Description = "Rejects the latest quote for an order")]
+    public async Task<QuoteStatusUpdateResponse> RejectQuote([ActionParameter] RejectQuoteInput input)
+    {
+        var quoteNumber = ValidateQuoteInput(input.ProjectId, input.QuoteNumber);
+
+        if (string.IsNullOrWhiteSpace(input.RejectReason))
+            throw new PluginMisconfigurationException("Reject reason cannot be empty.");
+
+        if (input.RejectReason.Length > 150)
+            throw new PluginMisconfigurationException("Reject reason cannot exceed 150 characters.");
+
+        return await UpdateQuoteStatus(input.ProjectId, new QuoteStatusUpdateRequest
+        {
+            QuoteNumber = quoteNumber,
+            Status = "QuoteRejected",
+            RejectReason = input.RejectReason
+        });
     }
 
     [Action("Search orders", Description = "Searches orders for the connected customer")]
@@ -328,6 +370,63 @@ public class ProjectActions(InvocationContext invocationContext, IFileManagement
         }
 
         return sourceFileNumber;
+    }
+
+    private async Task<int> UploadReferenceFileAsync(FileReference referenceFile)
+    {
+        using var referenceStream = await fileManagement.DownloadAsync(referenceFile);
+
+        var uploadRequest = new RestRequest("/api/v1/project/file/reference", Method.Post)
+        {
+            AlwaysMultipartFormData = true
+        };
+
+        byte[] fileBytes;
+        using (var ms = new MemoryStream())
+        {
+            await referenceStream.CopyToAsync(ms);
+            fileBytes = ms.ToArray();
+        }
+
+        uploadRequest.AddFile(
+            "FileToUpload",
+            fileBytes,
+            GetAsciiSafeMultipartFileName(referenceFile.Name));
+
+        var uploadResponse =
+            await Client.ExecuteWithErrorHandling<UploadReferenceFileResponse>(uploadRequest);
+
+        if (uploadResponse.ReferenceFileNumber <= 0)
+        {
+            throw new PluginApplicationException(
+                $"Propio returned an invalid reference file number for file '{referenceFile.Name}'.");
+        }
+
+        return uploadResponse.ReferenceFileNumber;
+    }
+
+    private async Task<QuoteStatusUpdateResponse> UpdateQuoteStatus(
+        string projectId,
+        QuoteStatusUpdateRequest body)
+    {
+        var request = new RestRequest($"/api/v1/project/{projectId}/quote/status", Method.Post);
+        request.AddJsonBody(body);
+
+        return await Client.ExecuteWithErrorHandling<QuoteStatusUpdateResponse>(request);
+    }
+
+    private static long ValidateQuoteInput(string projectId, string quoteNumber)
+    {
+        if (string.IsNullOrWhiteSpace(projectId))
+            throw new PluginMisconfigurationException("Order ID cannot be empty.");
+
+        if (!long.TryParse(quoteNumber, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedQuoteNumber) ||
+            parsedQuoteNumber <= 0)
+        {
+            throw new PluginMisconfigurationException("Quote number must be a positive integer.");
+        }
+
+        return parsedQuoteNumber;
     }
 
     private static string GetAsciiSafeMultipartFileName(string fileName)
